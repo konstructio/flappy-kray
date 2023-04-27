@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "flappy-kray.fullname" . }}-test-connection"
+  labels:
+{{ include "flappy-kray.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['{{ include "flappy-kray.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

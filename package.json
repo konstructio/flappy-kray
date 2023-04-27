@@ -1,7 +1,7 @@
 {
   "name": "flappy-kray",
   "version": "0.1.0",
-  "description": "a modification of Clumsy Bird - A MelonJS port of the famous Flappy Bird game",
+  "description": "a modification of Clumsy Bird - A MelonJS port of the Flappy Bird game",
   "repository": {
     "type": "git",
     "url": "https://github.com/kubefirst/flappy-kray"
@@ -9,26 +9,25 @@
   "licenses": [
     {
       "type": "MIT License",
-      "url": "https://github.com/ellisonleao/clumsy-bird/blob/master/LICENSE"
+      "url": "https://github.com/ellisonleao/clumsy-bird/blob/master/LICENSE.md"
     }
   ],
   "author": {
-    "name": "John Dietz",
-    "email": "ellisonleao@gmail.com"
+    "name": "kubefirst",
+    "email": "info@kubefirst.io"
   },
   "engines": {
     "node": ">= 0.8.0"
   },
-  "dependencies": {},
   "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-contrib-concat": "~0.2.0",
-    "grunt-contrib-clean": "~0.4.0",
-    "grunt-contrib-uglify": "~0.2.7",
-    "grunt-contrib-nodeunit": "~0.1.2",
-    "grunt-contrib-connect": "^0.7.1",
-    "grunt-replace": "~0.4.3",
-    "grunt-manifest": "~0.4.0"
+    "grunt": "^1.6.1",
+    "grunt-contrib-clean": "^2.0.1",
+    "grunt-contrib-concat": "^2.1.0",
+    "grunt-contrib-connect": "^3.0.0",
+    "grunt-contrib-jshint": "^3.2.0",
+    "grunt-contrib-nodeunit": "^5.0.0",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-manifest": "~0.4.0",
+    "grunt-replace": "^2.0.2"
   }
 }
