@@ -12,9 +12,11 @@ WORKDIR /usr/share/nginx/html
 
 ENV NODE_ENV production
 
+COPY --from=builder /app/build/ ./build/
+COPY --from=builder /app/data/ ./data/
+COPY --from=builder /app/js/ ./js/
 COPY --from=builder /app/index.html ./index.html
 COPY --from=builder /app/index.css ./index.css
-COPY --from=builder /app/build/clumsy-min.js ./build/clumsy-min.js
 
 EXPOSE 80
 
