@@ -16,8 +16,8 @@ COPY --from=builder /app/index.html ./index.html
 COPY --from=builder /app/index.css ./index.html
 COPY --from=builder /app/build/clumsy-min.js ./build/clumsy-min.js
 
-EXPOSE 8080
+EXPOSE 80
 
-ENV PORT 8080
+ENV PORT 80
 
 CMD ["nginx", "-g", "daemon off;"]
