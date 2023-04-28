@@ -40,9 +40,8 @@ spec:
             failureThreshold: 1
             timeoutSeconds: 30
           readinessProbe:
-            httpGet:
-              path: /api/healthz
-              port: http
+            tcpSocket:
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
             successThreshold: 1
