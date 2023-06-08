@@ -39,6 +39,7 @@ var game = {
             return;
         }
         me.audio.init("mp3,ogg");
+        me.loader.crossOrigin = "anonymous";
         me.loader.preload(game.resources, this.loaded.bind(this));
     },
 
