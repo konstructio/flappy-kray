@@ -1,28 +1,36 @@
 # flappy-kray
-a customized port of clumsy-bird
 
-# build
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="img/kubefirst-light.svg" alt="Flappy K-Ray Logo"/>
+    <img alt="" src="img/logo.svg"/>
+  </picture>
+</p>
 
-```
+A customized port of clumsy-bird
+
+## Build
+
+```shell
 grunt
 ```
 
-# run locally
+## Run Locally
 
-```
+```shell
 grunt
 grunt connect
 ```
 
-# game credit
+## Credits
 
-Clumsy Bird
+### Game
 
-[https://github.com/ellisonleao/clumsy-bird](https://github.com/ellisonleao/clumsy-bird)
+[Clumsy Bird](https://github.com/ellisonleao/clumsy-bird)
 
-# music credit
+### Music
 
-Space Jazz by Kevin MacLeod | https://incompetech.com/
-Music promoted by https://www.chosic.com/free-music/all/
-Creative Commons CC BY 3.0
-https://creativecommons.org/licenses/by/3.0/
+Space Jazz by [Kevin MacLeod](https://incompetech.com)
+Music promoted by [Chosic](https://www.chosic.com/free-music/all/)
+[Creative Commons CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
