@@ -2,10 +2,7 @@
 
 <!-- markdownlint-disable MD033 -->
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="img/kubefirst-light.svg" alt="Flappy K-Ray Logo"/>
     <img alt="" src="img/logo.svg"/>
-  </picture>
 </p>
 
 A customized port of clumsy-bird
