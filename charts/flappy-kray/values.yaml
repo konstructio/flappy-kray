@@ -44,6 +44,7 @@ ingress:
     - host: example.com
       paths:
         - path: /
+          pathType: Prefix
   tls:
    - secretName: flappy-kray-tls
      hosts:
