@@ -10,7 +10,7 @@ spec:
       steps:
         - - name: checkout
             templateRef:
-              name: cwft-git
+              name: cwft-git-v2
               template: checkout-with-gitops
               clusterScope: true
             arguments:
@@ -21,24 +21,24 @@ spec:
                   value: '{{workflow.parameters.branch}}'
                 - name: gitUrlNoProtocol
                   value: '{{workflow.parameters.gitUrlNoProtocol}}'
-        - - name: get-initial-chart-version
+
+        - - name: get-chart-version
             templateRef:
-              name: cwft-helm
-              template: get-chart-version
+              name: cwft-helm-v2
+              template: get-macro-chart-version-from-gitops-repo
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
                   from: '{{steps.checkout.outputs.artifacts.repo-source}}'
               parameters:
-                - name: appName
-                  value: '{{workflow.parameters.appName}}'
-                - name: chartDir
-                  value: 'charts/{{workflow.parameters.appName}}'
-        - - name: set-environment-version
+                - name: gitopsSourceFile
+                  value: '{{workflow.parameters.gitopsSourceFile}}'
+
+        - - name: set-environment-version-for-macro-chart
             templateRef:
-              name: cwft-helm
-              template: set-environment-version
+              name: cwft-helm-v2
+              template: set-environment-version-for-macro-chart
               clusterScope: true
             arguments:
               artifacts:
@@ -46,24 +46,25 @@ spec:
                   from: '{{steps.checkout.outputs.artifacts.repo-source}}'
               parameters:
                 - name: fullChartPath
-                  value: 'registry/{{workflow.parameters.clusterName}}/components/{{workflow.parameters.environment}}/{{workflow.parameters.appName}}/Chart.yaml'
+                  value: '{{workflow.parameters.gitopsDestinationFile}}'
                 - name: chartVersion
-                  value: '{{steps.get-initial-chart-version.outputs.result}}-rc.{{workflow.parameters.shortSha}}'
+                  value: '{{steps.get-chart-version.outputs.result}}'
                 - name: environment
                   value: '{{workflow.parameters.environment}}'
+
         - - name: commit
             templateRef:
-              name: cwft-git
-              template: pull-commit-push
+              name: cwft-git-v2
+              template: pull-commit-sign-push
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
-                  from: '{{steps.set-environment-version.outputs.artifacts.repo-source}}'
+                  from: '{{steps.set-environment-version-for-macro-chart.outputs.artifacts.repo-source}}'
               parameters:
                 - name: repoName
                   value: 'gitops'
                 - name: gitUrlNoProtocol
                   value: '{{workflow.parameters.gitUrlNoProtocol}}'
                 - name: commitMessage
-                  value: 'setting {{workflow.parameters.appName}} {{workflow.parameters.environment}} to chart version {{steps.get-initial-chart-version.outputs.result}}-rc.{{workflow.parameters.shortSha}}'
+                  value: 'setting {{workflow.parameters.appName}} {{workflow.parameters.environment}} to chart version {{steps.get-chart-version.outputs.result}}'

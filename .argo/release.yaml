@@ -6,9 +6,10 @@ spec:
   templates:
     - name: main
       steps:
+
         - - name: checkout
             templateRef:
-              name: cwft-git
+              name: cwft-git-v2
               template: checkout-with-gitops
               clusterScope: true
             arguments:
@@ -19,9 +20,10 @@ spec:
                   value: '{{workflow.parameters.branch}}'
                 - name: gitUrlNoProtocol
                   value: '{{workflow.parameters.gitUrlNoProtocol}}'
-        - - name: get-initial-chart-version
+
+        - - name: get-semver-chart-version
             templateRef:
-              name: cwft-helm
+              name: cwft-helm-v2
               template: get-chart-version
               clusterScope: true
             arguments:
@@ -33,10 +35,37 @@ spec:
                   value: '{{workflow.parameters.appName}}'
                 - name: chartDir
                   value: 'charts/{{workflow.parameters.appName}}'
-        - - name: set-chart-versions
+
+        - - name: get-chart-version
             templateRef:
-              name: cwft-helm
-              template: set-chart-versions
+              name: cwft-helm-v2
+              template: get-macro-chart-version-from-gitops-repo
+              clusterScope: true
+            arguments:
+              artifacts:
+                - name: repo-source
+                  from: '{{steps.checkout.outputs.artifacts.repo-source}}'
+              parameters:
+                - name: gitopsSourceFile
+                  value: '{{workflow.parameters.gitopsSourceFile}}'
+
+        - - name: get-shortsha-from-rc
+            templateRef:
+              name: cwft-helm-v2
+              template: get-shortsha-from-rc
+              clusterScope: true
+            arguments:
+              artifacts:
+                - name: repo-source
+                  from: '{{steps.checkout.outputs.artifacts.repo-source}}'
+              parameters:
+                - name: rcVersion
+                  value: '{{steps.get-chart-version.outputs.result}}'
+
+        - - name: set-micro-chart-versions
+            templateRef:
+              name: cwft-helm-v2
+              template: set-micro-chart-versions
               clusterScope: true
             arguments:
               artifacts:
@@ -48,94 +77,68 @@ spec:
                 - name: chartDir
                   value: 'charts/{{workflow.parameters.appName}}'
                 - name: chartVersion
-                  value: '{{steps.get-initial-chart-version.outputs.result}}'
+                  value: '{{steps.get-semver-chart-version.outputs.result}}'
                 - name: shortSha
-                  value: '{{workflow.parameters.shortSha}}'
-        - - name: publish-helm-chart
+                  value: '{{steps.get-shortsha-from-rc.outputs.result}}'
+
+        - - name: publish-micro-helm-chart
             templateRef:
-              name: cwft-helm
+              name: cwft-helm-v2
               template: publish-chart
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
-                  from: '{{steps.set-chart-versions.outputs.artifacts.repo-source}}'
+                  from: '{{steps.set-micro-chart-versions.outputs.artifacts.repo-source}}'
               parameters:
                 - name: appName
                   value: '{{workflow.parameters.appName}}'
                 - name: chartDir
                   value: 'charts/{{workflow.parameters.appName}}'
-        - - name: set-environment-version
+
+        - - name: release-and-tag-main-with-notes
             templateRef:
-              name: cwft-helm
-              template: set-environment-version
+              name: cwft-git-v2
+              template: release-and-tag-main-with-notes
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
-                  from: '{{steps.checkout.outputs.artifacts.repo-source}}'
+                  from: '{{steps.set-micro-chart-versions.outputs.artifacts.repo-source}}'
               parameters:
-                - name: fullChartPath
-                  value: 'registry/{{workflow.parameters.clusterName}}/components/{{workflow.parameters.environment}}/{{workflow.parameters.appName}}/Chart.yaml'
-                - name: chartVersion
-                  value: '{{steps.get-initial-chart-version.outputs.result}}'
-                - name: environment
-                  value: '{{workflow.parameters.environment}}'
-        - - name: commit-production
+                - name: orgName
+                  value: 'konstructio'
+                - name: appName
+                  value: '{{workflow.parameters.appName}}'
+                - name: tagName
+                  value: '{{steps.get-semver-chart-version.outputs.result}}'
+
+        - - name: increment-micro-chart-minor
             templateRef:
-              name: cwft-git
-              template: pull-commit-push
-              clusterScope: true
-            arguments:
-              artifacts:
-                - name: repo-source
-                  from: '{{steps.set-environment-version.outputs.artifacts.repo-source}}'
-              parameters:
-                - name: repoName
-                  value: 'gitops'
-                - name: gitUrlNoProtocol
-                  value: '{{workflow.parameters.gitUrlNoProtocol}}'
-                - name: commitMessage
-                  value: 'setting {{workflow.parameters.appName}} {{workflow.parameters.environment}} to chart version {{steps.get-initial-chart-version.outputs.result}}'
-        - - name: increment-chart-minor
-            templateRef:
-              name: cwft-helm
+              name: cwft-helm-v2
               template: increment-chart-minor
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
-                  from: '{{steps.set-environment-version.outputs.artifacts.repo-source}}'
+                  from: '{{steps.set-micro-chart-versions.outputs.artifacts.repo-source}}'
               parameters:
                 - name: appName
                   value: '{{workflow.parameters.appName}}'
                 - name: chartDir
                   value: 'charts/{{workflow.parameters.appName}}'
                 - name: chartVersion
-                  value: '{{steps.get-initial-chart-version.outputs.result}}'
-        - - name: get-published-chart-version
+                  value: '{{steps.get-chart-version.outputs.result}}'
+
+        - - name: commit-micro-chart-increment
             templateRef:
-              name: cwft-helm
-              template: get-chart-version
+              name: cwft-git-v2
+              template: pull-commit-sign-push
               clusterScope: true
             arguments:
               artifacts:
                 - name: repo-source
-                  from: '{{steps.increment-chart-minor.outputs.artifacts.repo-source}}'
-              parameters:
-                - name: appName
-                  value: '{{workflow.parameters.appName}}'
-                - name: chartDir
-                  value: 'charts/{{workflow.parameters.appName}}'
-        - - name: commit-chart-increment
-            templateRef:
-              name: cwft-git
-              template: pull-commit-push
-              clusterScope: true
-            arguments:
-              artifacts:
-                - name: repo-source
-                  from: '{{steps.increment-chart-minor.outputs.artifacts.repo-source}}'
+                  from: '{{steps.increment-micro-chart-minor.outputs.artifacts.repo-source}}'
               parameters:
                 - name: repoName
                   value: '{{workflow.parameters.appName}}'
@@ -147,4 +150,38 @@ spec:
                   # github skip ci rule: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
                   # gitlab skip ci rule: https://devops.stackexchange.com/questions/6809/is-there-a-ci-skip-option-in-gitlab-ci
                   # in case, the rule is disbaled or don't work this step will create a circular trigger of builds and bumps of version.
-                  value: "[skip ci] [CI SKIP] setting {{workflow.parameters.appName}} {{workflow.parameters.environment}} to chart version {{steps.get-published-chart-version.outputs.result}}\n\nskip-checks:true"
+                  value: "[skip ci] [CI SKIP] bumping {{workflow.parameters.appName}} {{workflow.parameters.environment}} minor version\n\nskip-checks:true"
+
+        - - name: set-environment-version
+            templateRef:
+              name: cwft-helm-v2
+              template: set-environment-version-for-macro-chart
+              clusterScope: true
+            arguments:
+              artifacts:
+                - name: repo-source
+                  from: '{{steps.checkout.outputs.artifacts.repo-source}}'
+              parameters:
+                - name: fullChartPath
+                  value: '{{workflow.parameters.gitopsDestinationFile}}'
+                - name: chartVersion
+                  value: '{{steps.get-semver-chart-version.outputs.result}}'
+                - name: environment
+                  value: '{{workflow.parameters.environment}}'
+
+        - - name: commit
+            templateRef:
+              name: cwft-git-v2
+              template: pull-commit-sign-push
+              clusterScope: true
+            arguments:
+              artifacts:
+                - name: repo-source
+                  from: '{{steps.set-environment-version.outputs.artifacts.repo-source}}'
+              parameters:
+                - name: repoName
+                  value: 'gitops'
+                - name: gitUrlNoProtocol
+                  value: '{{workflow.parameters.gitUrlNoProtocol}}'
+                - name: commitMessage
+                  value: 'setting {{workflow.parameters.appName}} {{workflow.parameters.environment}} to chart version {{steps.get-semver-chart-version.outputs.result}}'

@@ -1,6 +1,6 @@
 {
   "name": "flappy-kray",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "a modification of Clumsy Bird - A MelonJS port of the Flappy Bird game",
   "repository": {
     "type": "git",
