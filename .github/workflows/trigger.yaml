@@ -1,24 +1,19 @@
-name: main
+name: trigger
 env:
   ARGO_NAMESPACE: argo
   ARGO_VERSION: v3.4.1
 
-permissions:
-  packages: write
-  contents: read
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
+
 jobs:
-  publish:
+  trigger:
     runs-on: self-hosted
     steps:
-      - name: checkout repository
+      - name: Check out repository code
         uses: actions/checkout@v4
-      - name: inject slug/short variables
+      - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
-      - name: publish image and chart
+      - name: trigger
         run: |
           echo "Install argo"
           # Download the binary
@@ -29,13 +24,9 @@ jobs:
           chmod +x argo-linux-amd64
           echo "commit sha ${GITHUB_SHA}"
           ./argo-linux-amd64 version --short
-          ./argo-linux-amd64 submit .argo/publish.yaml \
-            --generate-name="${GITHUB_REPOSITORY_NAME_PART}-publish-${GITHUB_SHA_SHORT}-" \
+          ./argo-linux-amd64 submit .argo/trigger.yaml \
+            --generate-name="${GITHUB_REPOSITORY_NAME_PART}-trigger-${GITHUB_SHA_SHORT}-" \
             -p appName="${GITHUB_REPOSITORY_NAME_PART}" \
             -p branch="${GITHUB_REF_NAME}" \
-            -p environment="development" \
-            -p containerRegistryURL="ghcr.io/konstructio/${GITHUB_REPOSITORY_NAME_PART}:${GITHUB_SHA_SHORT}" \
             -p gitUrlNoProtocol="git@github.com:${GITHUB_REPOSITORY_OWNER_PART_SLUG}" \
-            -p shortSha="${GITHUB_SHA_SHORT}" \
-            -p gitopsDestinationFile="registry/environments/development/flappy-kray.yaml" \
             --wait --log
